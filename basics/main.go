@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -101,6 +103,115 @@ func main() {
 	//workingWithConcurrency2()
 	//whatNotToDoWithChannels()
 	//basicChannelProgram()
+	//moreAdvancedChannelProgram()
+	workingWithGenericsStructAndFunctions()
+
+}
+func workingWithGenericsStructAndFunctions() {
+	var instSlice = []int{1, 2, 3}
+	fmt.Println(sumIntSlice(instSlice))
+	fmt.Println(sumSlice(instSlice))
+
+	var float32Slice = []float32{1, 2, 3}
+	fmt.Println(sumFloat32Slice(float32Slice))
+	fmt.Println(sumSlice(float32Slice))
+
+	var float64Slice = []float64{1, 2, 3}
+	fmt.Println(sumFloat64Slice(float64Slice))
+	fmt.Println(sumSlice(float64Slice))
+
+	fmt.Println(isEmpty[int](instSlice))
+	fmt.Println(isEmpty(instSlice))
+
+	var contacts []contactInfo = loadJSON[contactInfo]("./contactInfo.json")
+	fmt.Printf("\n%+v", contacts)
+
+	var purchases []purchaseInfo = loadJSON[purchaseInfo]("./purchaseInfo.json")
+	fmt.Printf("\n%+v", purchases)
+
+	var gasCar = car[gasEngine]{
+		carMake:  "Honda",
+		carModel: "Civic",
+		engine: gasEngine{
+			gallons: 12,
+			mpg:     40,
+		},
+	}
+
+	var electricCar = car[electricEngine]{
+		carMake:  "Honda",
+		carModel: "Civic",
+		engine: electricEngine{
+			kwh:   57,
+			mpkwh: 40,
+		},
+	}
+
+	fmt.Println(gasCar)
+	fmt.Println(electricCar)
+}
+
+type contactInfo struct {
+	Name  string
+	Email string
+}
+
+type purchaseInfo struct {
+	Name   string
+	Price  float32
+	Amount int
+}
+type car[T gasEngine | electricEngine] struct {
+	carMake  string
+	carModel string
+	engine   T
+}
+
+func loadJSON[T contactInfo | purchaseInfo](filepath string) []T {
+	var data, _ = os.ReadFile(filepath)
+
+	var loaded = []T{}
+	json.Unmarshal(data, &loaded)
+
+	return loaded
+}
+
+func isEmpty[T any](slice []T) bool {
+	return len(slice) == 0
+}
+
+func sumIntSlice(slice []int) int {
+	var sum int
+	for _, v := range slice {
+		sum += v
+	}
+	return sum
+}
+func sumFloat32Slice(slice []float32) float32 {
+	var sum float32
+	for _, v := range slice {
+		sum += v
+	}
+	return sum
+}
+
+func sumFloat64Slice(slice []float64) float64 {
+	var sum float64
+	for _, v := range slice {
+		sum += v
+	}
+	return sum
+}
+
+func sumSlice[T int | float32 | float64](slice []T) T {
+	var sum T
+	for _, v := range slice {
+		sum += v
+	}
+	return sum
+}
+
+func moreAdvancedChannelProgram() {
 	var chickenChannel = make(chan string)
 	var tofuChannel = make(chan string)
 
@@ -111,6 +222,7 @@ func main() {
 	}
 	sendMessage(chickenChannel, tofuChannel)
 }
+
 func checkTofuPrices(website string, tofuChannel chan string) {
 	for {
 		time.Sleep(time.Second + 1)
